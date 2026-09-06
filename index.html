@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+
+  <title>World Incident Report</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Oswald:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --red: #ef233c;
+      --dark-red: #b9001f;
+      --black: #060708;
+      --soft-black: #0d0f12;
+      --card: rgba(18, 21, 25, 0.86);
+      --white: #ffffff;
+      --muted: #a8adb7;
+      --line: rgba(255, 255, 255, 0.12);
+      --green: #35d07f;
+      --yellow: #ffc857;
+      --blue: #40a9ff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--black);
+    }
+
+    body {
+      font-family: "Inter", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(239, 35, 60, 0.13), transparent 35%),
+        radial-gradient(circle at bottom left, rgba(64, 169, 255, 0.08), transparent 35%),
+        var(--black);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    body.locked {
+      overflow: hidden;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.035;
+      z-index: 999;
+      background-image:
+        repeating-radial-gradient(
+          circle at 0 0,
+          transparent 0,
+          rgba(255, 255, 255, 0.8) 1px,
+          transparent 2px,
+          transparent 5px
+        );
+      background-size: 10px 10px;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(4, 5, 7, 0.93);
+      backdrop-filter: blur(15px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .network-row {
+      display: flex;
+      align-items: stretch;
+      min-height: 48px;
+    }
+
+    .network-name {
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      font-family: "Oswald", sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      white-space: nowrap;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 88px;
+      padding: 0 16px;
+      background: var(--red);
+      font-family: "Oswald", sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1.3px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      margin-right: 8px;
+      border-radius: 50%;
+      background: white;
+      animation: blink 1.15s infinite;
+    }
+
+    .ticker {
+      height: 31px;
+      overflow: hidden;
+      background: #f1f1f1;
+      color: #111;
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid var(--red);
+    }
+
+    .ticker-track {
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      width: max-content;
+      animation: ticker 26s linear infinite;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.45px;
+      text-transform: uppercase;
+    }
+
+    .ticker-track span {
+      padding-right: 50px;
+    }
+
+    .ticker-track b {
+      color: var(--dark-red);
+    }
+
+    main {
+      padding-top: 79px;
+    }
+
+    .screen {
+      min-height: calc(100svh - 79px);
+      padding: 30px 18px 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen-content {
+      width: min(100%, 520px);
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero {
+      min-height: calc(100svh - 79px);
+      padding: 0;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .hero-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 38%;
+      filter: brightness(0.55) saturate(0.75);
+      transform: scale(1.03);
+    }
+
+    .hero-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.68) 58%, #060708 100%);
+    }
+
+    .hero-content {
+      min-height: calc(100svh - 79px);
+      padding: 42px 20px 35px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      gap: 8px;
+      margin-bottom: 15px;
+      color: white;
+      background: var(--red);
+      padding: 8px 11px;
+      font-family: "Oswald", sans-serif;
+      font-weight: 700;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: "Oswald", sans-serif;
+      text-transform: uppercase;
+      line-height: 0.98;
+    }
+
+    h1 {
+      font-size: clamp(43px, 13vw, 68px);
+      max-width: 470px;
+      letter-spacing: -1.4px;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.45);
+    }
+
+    .hero-subtitle {
+      margin-top: 17px;
+      max-width: 450px;
+      color: rgba(255,255,255,0.83);
+      line-height: 1.58;
+      font-size: 15px;
+    }
+
+    .meta-row {
+      margin-top: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .meta-chip {
+      padding: 9px 11px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(10px);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.86);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .primary-button {
+      margin-top: 28px;
+      width: 100%;
+      min-height: 55px;
+      border-radius: 10px;
+      background: var(--red);
+      color: white;
+      font-weight: 900;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      box-shadow: 0 14px 34px rgba(239, 35, 60, 0.28);
+      transition: 0.2s ease;
+    }
+
+    .primary-button:active {
+      transform: scale(0.97);
+    }
+
+    .section-label {
+      color: var(--red);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2.2px;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: clamp(36px, 11vw, 54px);
+      margin-bottom: 15px;
+    }
+
+    .section-copy {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .glass-card {
+      margin-top: 22px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--card);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 16px 50px rgba(0,0,0,0.28);
+    }
+
+    .loading-panel {
+      padding: 24px 20px;
+    }
+
+    .terminal-title {
+      font-family: "Oswald", sans-serif;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 22px;
+    }
+
+    .load-item {
+      margin-bottom: 22px;
+    }
+
+    .load-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .load-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #d7dae0;
+    }
+
+    .load-status {
+      color: var(--green);
+      font-size: 11px;
+    }
+
+    .progress {
+      height: 7px;
+      overflow: hidden;
+      border-radius: 100px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--red), #ff7083);
+      transition: width 1.4s cubic-bezier(.22,.61,.36,1);
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 11px;
+      margin-top: 22px;
+    }
+
+    .data-box {
+      padding: 16px 14px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+    }
+
+    .data-box small {
+      display: block;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 7px;
+    }
+
+    .data-box strong {
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--yellow);
+    }
+
+    .status-pill::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 12px currentColor;
+    }
+
+    .photo-card {
+      margin-top: 22px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #111;
+      box-shadow: 0 18px 55px rgba(0,0,0,0.35);
+    }
+
+    .photo-card img {
+      height: 470px;
+      object-fit: cover;
+    }
+
+    .suspect-photo img {
+      object-position: 48% 30%;
+    }
+
+    .evidence-photo img {
+      object-position: center;
+    }
+
+    .photo-overlay {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 55px 18px 18px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.92));
+    }
+
+    .photo-overlay small {
+      display: block;
+      color: var(--red);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.8px;
+      font-weight: 900;
+      margin-bottom: 7px;
+    }
+
+    .photo-overlay strong {
+      display: block;
+      font-family: "Oswald", sans-serif;
+      text-transform: uppercase;
+      font-size: 25px;
+      line-height: 1.05;
+    }
+
+    .person-details {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 13px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px 15px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid var(--line);
+    }
+
+    .detail-row span {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 800;
+    }
+
+    .detail-row strong {
+      text-align: right;
+      font-size: 12px;
+    }
+
+    .timeline {
+      margin-top: 22px;
+      position: relative;
+      padding-left: 25px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 5px;
+      bottom: 10px;
+      width: 2px;
+      background: linear-gradient(var(--red), rgba(239,35,60,0.07));
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 22px;
+      padding: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -23px;
+      top: 21px;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--red);
+      border: 3px solid var(--black);
+      box-shadow: 0 0 0 2px rgba(239,35,60,0.3);
+    }
+
+    .timeline-time {
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      margin-bottom: 7px;
+    }
+
+    .timeline-text {
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .analysis-grid {
+      margin-top: 22px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .analysis-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      border-radius: 12px;
+      font-size: 13px;
+    }
+
+    .check {
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .responsibility-card {
+      margin-top: 16px;
+      text-align: center;
+      padding: 25px 18px;
+    }
+
+    .big-percent {
+      font-family: "Oswald", sans-serif;
+      font-size: 74px;
+      color: var(--red);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .percent-caption {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.3px;
+      font-weight: 800;
+    }
+
+    .result-box {
+      margin-top: 17px;
+      padding: 16px;
+      background: rgba(53, 208, 127, 0.09);
+      border: 1px solid rgba(53, 208, 127, 0.26);
+      border-radius: 13px;
+      color: #b7ffd6;
+      font-weight: 800;
+      line-height: 1.5;
+    }
+
+    .witnesses {
+      margin-top: 22px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .witness {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 15px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+    }
+
+    .witness-icon {
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+      font-size: 28px;
+    }
+
+    .witness small {
+      display: block;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 9px;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .witness blockquote {
+      font-size: 13px;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .breaking-update {
+      margin-top: 19px;
+      padding: 14px;
+      background: var(--red);
+      color: white;
+      border-radius: 11px;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-size: 12px;
+      animation: pulseBox 1.6s infinite;
+    }
+
+    .evidence-caption {
+      padding: 17px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .evidence-caption small {
+      display: block;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 1.3px;
+      font-size: 9px;
+      font-weight: 900;
+      margin-bottom: 7px;
+    }
+
+    .evidence-caption p {
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.55;
+      margin-top: 10px;
+    }
+
+    .court {
+      text-align: center;
+    }
+
+    .court-icon {
+      font-size: 52px;
+      margin-bottom: 15px;
+    }
+
+    .decision-wait {
+      margin-top: 22px;
+      color: var(--muted);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .dots::after {
+      content: "";
+      animation: dots 1.2s steps(4, end) infinite;
+    }
+
+    .verdict {
+      display: none;
+      margin-top: 25px;
+      font-family: "Oswald", sans-serif;
+      font-size: clamp(55px, 17vw, 86px);
+      line-height: 0.95;
+      color: var(--green);
+      text-transform: uppercase;
+      text-shadow: 0 0 32px rgba(53,208,127,0.26);
+      animation: verdictIn 0.7s cubic-bezier(.17,.67,.32,1.35);
+    }
+
+    .verdict-sub {
+      display: none;
+      color: var(--muted);
+      margin-top: 14px;
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .final-screen {
+      padding: 0;
+      min-height: calc(100svh - 79px);
+    }
+
+    .final-photo {
+      position: absolute;
+      inset: 0;
+    }
+
+    .final-photo img {
+      height: 100%;
+      object-fit: cover;
+      object-position: 54% center;
+      filter: brightness(0.63);
+    }
+
+    .final-photo::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,0.22), rgba(0,0,0,0.76) 65%, #060708 100%);
+    }
+
+    .final-content {
+      min-height: calc(100svh - 79px);
+      padding: 40px 20px 35px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      position: relative;
+      z-index: 2;
+    }
+
+    .final-title {
+      font-size: clamp(44px, 13vw, 65px);
+      margin-bottom: 14px;
+    }
+
+    .final-message {
+      color: rgba(255,255,255,0.86);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 470px;
+    }
+
+    .final-message strong {
+      color: white;
+    }
+
+    .case-closed {
+      display: none;
+      margin-top: 17px;
+      padding: 17px;
+      text-align: center;
+      border-radius: 13px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(0,0,0,0.42);
+      backdrop-filter: blur(12px);
+      font-family: "Oswald", sans-serif;
+      font-size: 24px;
+      text-transform: uppercase;
+      letter-spacing: 1.3px;
+      animation: fadeUp 0.55s ease;
+    }
+
+    .scroll-hint {
+      margin-top: 19px;
+      color: rgba(255,255,255,0.58);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition:
+        opacity 0.8s ease,
+        transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .intro-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at center, rgba(239,35,60,0.15), transparent 42%),
+        #030405;
+      text-align: center;
+      transition: opacity 0.75s ease, visibility 0.75s ease;
+    }
+
+    .intro-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .intro-inner {
+      width: min(100%, 420px);
+    }
+
+    .intro-logo {
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--red);
+      box-shadow: 0 0 30px rgba(239,35,60,0.28);
+      font-size: 32px;
+    }
+
+    .intro-kicker {
+      color: var(--red);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2.4px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .intro-title {
+      font-size: clamp(42px, 12vw, 60px);
+      margin-bottom: 15px;
+    }
+
+    .intro-copy {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .intro-button {
+      margin-top: 27px;
+      width: 100%;
+      min-height: 55px;
+      border-radius: 9px;
+      background: var(--red);
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 900;
+    }
+
+    .fake-alert {
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      top: 95px;
+      z-index: 500;
+      padding: 15px 16px;
+      background: rgba(14, 16, 19, 0.96);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-left: 4px solid var(--red);
+      border-radius: 12px;
+      box-shadow: 0 18px 55px rgba(0,0,0,0.45);
+      transform: translateY(-170px);
+      transition: transform 0.55s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .fake-alert.show {
+      transform: translateY(0);
+    }
+
+    .fake-alert small {
+      color: var(--red);
+      display: block;
+      text-transform: uppercase;
+      font-size: 9px;
+      letter-spacing: 1.2px;
+      font-weight: 900;
+      margin-bottom: 5px;
+    }
+
+    .fake-alert strong {
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .confetti {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      width: 8px;
+      height: 14px;
+      opacity: 0.9;
+      animation: confettiFall linear forwards;
+    }
+
+    @keyframes ticker {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    @keyframes blink {
+      0%, 45% {
+        opacity: 1;
+      }
+
+      46%, 100% {
+        opacity: 0.25;
+      }
+    }
+
+    @keyframes pulseBox {
+      0%, 100% {
+        box-shadow: 0 0 0 rgba(239,35,60,0);
+      }
+
+      50% {
+        box-shadow: 0 0 28px rgba(239,35,60,0.34);
+      }
+    }
+
+    @keyframes dots {
+      0% {
+        content: "";
+      }
+
+      25% {
+        content: ".";
+      }
+
+      50% {
+        content: "..";
+      }
+
+      75%, 100% {
+        content: "...";
+      }
+    }
+
+    @keyframes verdictIn {
+      from {
+        opacity: 0;
+        transform: scale(0.72);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes confettiFall {
+      to {
+        transform: translateY(115vh) rotate(720deg);
+      }
+    }
+
+    @media (min-width: 700px) {
+      body {
+        max-width: 520px;
+        margin: 0 auto;
+        border-left: 1px solid rgba(255,255,255,0.08);
+        border-right: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .topbar,
+      .fake-alert {
+        max-width: 520px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .photo-card img {
+        height: 560px;
+      }
+    }
+  </style>
+</head>
+
+<body class="locked">
+
+  <div class="noise"></div>
+  <div class="confetti" id="confetti"></div>
+
+  <div class="intro-overlay" id="introOverlay">
+    <div class="intro-inner">
+      <div class="intro-logo">⚠</div>
+
+      <div class="intro-kicker">
+        World Incident Report
+      </div>
+
+      <h2 class="intro-title">
+        Urgent Report
+      </h2>
+
+      <p class="intro-copy">
+        A developing incident near a lake in Lithuania has triggered
+        an immediate digital investigation.
+      </p>
+
+      <button class="intro-button" id="startButton">
+        Open Breaking Report
+      </button>
+    </div>
+  </div>
+
+  <div class="fake-alert" id="fakeAlert">
+    <small>Breaking update</small>
+    <strong>
+      New evidence has been added to the Lithuanian lake investigation.
+    </strong>
+  </div>
+
+  <header class="topbar">
+    <div class="network-row">
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        Live
+      </div>
+
+      <div class="network-name">
+        World Incident Report
+      </div>
+    </div>
+
+    <div class="ticker">
+      <div class="ticker-track">
+        <span>
+          <b>Breaking:</b> Incident reported near Lithuanian lake
+          • Suspect identified • Digital investigation underway
+          • No danger to the public
+        </span>
+
+        <span>
+          <b>Breaking:</b> Incident reported near Lithuanian lake
+          • Suspect identified • Digital investigation underway
+          • No danger to the public
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="screen hero" id="home">
+      <div class="hero-bg">
+        <img
+          src="CAE66EEC-5CED-449E-93C4-CB63F653AADF.jpeg"
+          alt="Primary suspect"
+        />
+      </div>
+
+      <div class="screen-content hero-content">
+        <div class="eyebrow">
+          <span class="live-dot"></span>
+          Breaking News
+        </div>
+
+        <h1>
+          Shocking lake incident under investigation
+        </h1>
+
+        <p class="hero-subtitle">
+          Authorities have opened an urgent investigation following
+          an unexpected incident involving one woman and one local bee.
+        </p>
+
+        <div class="meta-row">
+          <div class="meta-chip">Lithuania</div>
+          <div class="meta-chip">4:59 PM</div>
+          <div class="meta-chip">Lake Area</div>
+        </div>
+
+        <button class="primary-button" onclick="goToSection('loading')">
+          View Official Report
+        </button>
+
+        <div class="scroll-hint">
+          Exclusive report • Scroll to continue
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="loading">
+      <div class="screen-content reveal">
+        <div class="section-label">
+          Secure connection
+        </div>
+
+        <h2 class="section-title">
+          Retrieving evidence
+        </h2>
+
+        <p class="section-copy">
+          The system is collecting footage, timestamps and witness reports
+          related to the incident.
+        </p>
+
+        <div class="glass-card loading-panel">
+          <div class="terminal-title">
+            Investigation Database
+          </div>
+
+          <div class="load-item">
+            <div class="load-line">
+              <span>Connecting to lake surveillance</span>
+              <span class="load-status">Complete</span>
+            </div>
+
+            <div class="progress">
+              <div class="progress-bar" data-width="100"></div>
+            </div>
+          </div>
+
+          <div class="load-item">
+            <div class="load-line">
+              <span>Searching available footage</span>
+              <span class="load-status">Complete</span>
+            </div>
+
+            <div class="progress">
+              <div class="progress-bar" data-width="100"></div>
+            </div>
+          </div>
+
+          <div class="load-item">
+            <div class="load-line">
+              <span>Identifying primary suspect</span>
+              <span class="load-status">Match found</span>
+            </div>
+
+            <div class="progress">
+              <div class="progress-bar" data-width="100"></div>
+            </div>
+          </div>
+
+          <div class="load-item">
+            <div class="load-line">
+              <span>Analyzing bee trajectory</span>
+              <span class="load-status">98.7%</span>
+            </div>
+
+            <div class="progress">
+              <div class="progress-bar" data-width="98.7"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="primary-button" onclick="goToSection('report')">
+          Open Incident File
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="report">
+      <div class="screen-content reveal">
+        <div class="section-label">
+          File No. LT-0459-B
+        </div>
+
+        <h2 class="section-title">
+          Incident report
+        </h2>
+
+        <p class="section-copy">
+          The following details were confirmed by the World Incident
+          Report investigation unit.
+        </p>
+
+        <div class="glass-card">
+          <div class="data-grid">
+            <div class="data-box">
+              <small>Location</small>
+              <strong>Lake Area, Lithuania</strong>
+            </div>
+
+            <div class="data-box">
+              <small>Reported time</small>
+              <strong>4:59 PM</strong>
+            </div>
+
+            <div class="data-box">
+              <small>Incident type</small>
+              <strong>Human–Bee Contact</strong>
+            </div>
+
+            <div class="data-box">
+              <small>Case status</small>
+              <strong class="status-pill">Active</strong>
+            </div>
+
+            <div class="data-box">
+              <small>Victim</small>
+              <strong>One local bee</strong>
+            </div>
+
+            <div class="data-box">
+              <small>Threat level</small>
+              <strong>Emotionally serious</strong>
+            </div>
+          </div>
+        </div>
+
+        <button class="primary-button" onclick="goToSection('suspect')">
+          Reveal Primary Suspect
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="suspect">
+      <div class="screen-content reveal">
+        <div class="section-label">
+          Identity confirmed
+        </div>
+
+        <h2 class="section-title">
+          Primary suspect
+        </h2>
+
+        <div class="photo-card suspect-photo">
+          <img
+            src="CAE66EEC-5CED-449E-93C4-CB63F653AADF.jpeg"
+            alt="Primary suspect"
+          />
+
+          <div class="photo-overlay">
+            <small>Person of interest</small>
+            <strong>Identity confirmed</strong>
+          </div>
+        </div>
+
+        <div class="person-details">
+          <div class="detail-row">
+            <span>Name</span>
+            <strong>Classified</strong>
+          </div>
+
+          <div class="detail-row">
+            <span>Risk level</span>
+            <strong>Extremely harmless</strong>
+          </div>
+
+          <div class="detail-row">
+            <span>Current status</span>
+            <strong>Still suspiciously cute</strong>
+          </div>
+
+          <div class="detail-row">
+            <span>Occupation</span>
+            <strong>Professional bee stepper</strong>
+          </div>
+        </div>
+
+        <button class="primary-button" onclick="goToSection('timeline')">
+          Review Incident Timeline
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="timeline">
+      <div class="screen-content reveal">
+        <div class="section-label">
+          Reconstructed events
+        </div>
+
+        <h2 class="section-title">
+          What happened
+        </h2>
+
+        <p class="section-copy">
+          Investigators reconstructed the final moments leading
+          to the contact.
+        </p>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-time">4:58:12 PM</div>
+            <div class="timeline-text">
+              A local bee is seen peacefully enjoying the Lithuanian afternoon.
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-time">4:58:41 PM</div>
+            <div class="timeline-text">
+              The bee enters a high-risk walking zone near the lake.
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-time">4:58:57 PM</div>
+            <div class="timeline-text">
+              One unidentified human foot approaches the area.
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-time">4:59:00 PM</div>
+            <div class="timeline-text">
+              Contact detected. Witnesses report a brief moment of confusion.
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-time">4:59:03 PM</div>
+            <div class="timeline-text">
+              The suspect realizes what happened. Investigation begins.
+            </div>
+          </div>
+        </div>
+
+        <button class="primary-button" onclick="goToSection('analysis')">
+          Run AI Reconstruction
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="analysis">
+      <div class="screen-content reveal">
+        <div class="section-label">
+          Artificial intelligence
+        </div>
+
+        <h2 class="section-title">
+          Collision analysis
+        </h2>
+
+        <p class="section-copy">
+          Advanced technology was used to reconstruct the exact sequence
+          of the incident.
+        </p>
+
+        <div class="analysis-grid">
+          <div class="analysis-row">
+            <span>Foot trajectory located</span>
+            <span class="check">✓</span>
+          </div>
+
+          <div class="analysis-row">
+            <span>Bee position calculated</span>
+            <span class="check">✓</span>
+          </div>
+
+          <div class="analysis-row">
+            <span>Contact point confirmed</span>
+            <span class="check">✓</span>
+          </div>
+
+          <div class="analysis-row">
+            <span>Malicious intent detected</span>
+            <span class="check">No</span>
+          </div>
+        </div>
+
+        <div class="glass-card responsibility-card">
+          <div class="big-percent" id="percentage">
+            0%
+          </div>
+
+          <div class="percent-caption">
+            Probability that it was an accident
+          </div>
+
+          <div class="result-box">
+            Final AI conclusion: she clearly did not see the bee.
+          </div>
+        </div>
+
+        <button class="primary-button" onclick="goToSection('witnesses')">
+          Read Witness Statements
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="witnesses">
+      <div class="screen-content reveal">
+        <div class="section-label">
+          Exclusive testimony
+        </div>
+
+        <h2 class="section-title">
+          Witnesses speak
+        </h2>
+
+        <p class="section-copy">
+          Several witnesses near the lake were questioned by investigators.
+        </p>
+
+        <div class="witnesses">
+          <div class="witness">
+            <div class="witness-icon">🦆</div>
+
+            <div>
+              <small>Witness 01 • Local duck</small>
+              <blockquote>
+                “I heard something, but I was busy being a duck.”
+              </blockquote>
+            </div>
+          </div>
+
+          <div class="witness">
+            <div class="witness-icon">🐟</div>
+
+            <div>
+              <small>Witness 02 • Lake fish</small>
+              <blockquote>
+                “I saw absolutely nothing. I was underwater.”
+              </blockquote>
+            </div>
+          </div>
+
+          <div class="witness">
+            <div class="witness-icon">🐝</div>
+
+            <div>
+              <small>Witness 03 • Another bee</small>
+              <blockquote>
+                “It all happened very fast. We lost a good one.”
+              </blockquote>
+            </div>
+          </div>
+        </div>
+
+        <button class="primary-button" onclick="showEvidenceAlert()">
+          Check Newly Discovered Evidence
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="evidenceOne">
+      <div class="screen-content reveal">
+        <div class="section-label">
+          Evidence file 01
+        </div>
+
+        <h2 class="section-title">
+          Last known sighting
+        </h2>
+
+        <p class="section-copy">
+          This photograph was reportedly taken before the suspect
+          arrived at the scene.
+        </p>
+
+        <div class="photo-card evidence-photo">
+          <img
+            src="IMG_2384.jpeg"
+            alt="Evidence photograph"
+          />
+
+          <div class="photo-overlay">
+            <small>Evidence photograph</small>
+            <strong>Calm before the incident</strong>
+          </div>
+        </div>
+
+        <div class="breaking-update">
+          New evidence has just been discovered
+        </div>
+
+        <button class="primary-button" onclick="goToSection('evidenceTwo')">
+          Open Evidence File 02
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="evidenceTwo">
+      <div class="screen-content reveal">
+        <div class="section-label">
+          Evidence file 02
+        </div>
+
+        <h2 class="section-title">
+          Suspicious marks found
+        </h2>
+
+        <p class="section-copy">
+          Investigators discovered multiple marks during the wider
+          examination of the suspect.
+        </p>
+
+        <div class="photo-card evidence-photo">
+          <img
+            src="IMG_3998.jpeg"
+            alt="Additional evidence"
+          />
+
+          <div class="evidence-caption">
+            <small>Official finding</small>
+
+            <p>
+              Multiple unusual marks were located around the neck area.
+            </p>
+
+            <div class="small-note">
+              Authorities have officially confirmed that these marks
+              are completely unrelated to the bee incident.
+            </div>
+          </div>
+        </div>
+
+        <button class="primary-button" onclick="goToSection('decision')">
+          Continue to Final Decision
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="decision">
+      <div class="screen-content reveal court">
+        <div class="court-icon">
+          ⚖️
+        </div>
+
+        <div class="section-label">
+          Final ruling
+        </div>
+
+        <h2 class="section-title">
+          Court decision
+        </h2>
+
+        <p class="section-copy">
+          Following a complete review of the evidence,
+          the investigation panel has reached a verdict.
+        </p>
+
+        <div class="glass-card">
+          <div class="decision-wait" id="decisionWait">
+            Calculating final verdict<span class="dots"></span>
+          </div>
+
+          <div class="verdict" id="verdict">
+            Not Guilty
+          </div>
+
+          <div class="verdict-sub" id="verdictSub">
+            The incident has officially been classified as an accident.
+            The suspect is free to continue enjoying Lithuania.
+          </div>
+        </div>
+
+        <button
+          class="primary-button"
+          id="verdictButton"
+          onclick="calculateVerdict()"
+        >
+          Reveal Verdict
+        </button>
+      </div>
+    </section>
+
+    <section class="screen final-screen" id="final">
+      <div class="final-photo">
+        <img
+          src="IMG_2155 (1).jpeg"
+          alt="Final photograph"
+        />
+      </div>
+
+      <div class="screen-content final-content reveal">
+        <div class="section-label">
+          Investigation complete
+        </div>
+
+        <h2 class="final-title">
+          Okay, it was a joke
+        </h2>
+
+        <p class="final-message">
+          This was obviously not a real investigation.
+          I just could not miss the opportunity to make fun of you
+          after today's bee incident.
+          <br><br>
+          <strong>
+            You are officially innocent.
+          </strong>
+          I love you. Now please watch where you step.
+        </p>
+
+        <button class="primary-button" onclick="closeCase()">
+          Close Case
+        </button>
+
+        <div class="case-closed" id="caseClosed">
+          Case Closed 🐝
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const introOverlay = document.getElementById("introOverlay");
+    const startButton = document.getElementById("startButton");
+    const fakeAlert = document.getElementById("fakeAlert");
+    const percentageElement = document.getElementById("percentage");
+
+    let percentageAnimated = false;
+    let verdictShown = false;
+
+    startButton.addEventListener("click", () => {
+      introOverlay.classList.add("hidden");
+      document.body.classList.remove("locked");
+    });
+
+    function goToSection(id) {
+      const section = document.getElementById(id);
+
+      if (!section) {
+        return;
+      }
+
+      section.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+
+    function showEvidenceAlert() {
+      fakeAlert.classList.add("show");
+
+      setTimeout(() => {
+        fakeAlert.classList.remove("show");
+        goToSection("evidenceOne");
+      }, 1800);
+    }
+
+    const revealObserver = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+
+            const progressBars =
+              entry.target.querySelectorAll(".progress-bar");
+
+            progressBars.forEach(bar => {
+              const width = bar.dataset.width || "100";
+
+              setTimeout(() => {
+                bar.style.width = width + "%";
+              }, 250);
+            });
+
+            if (
+              entry.target.closest("#analysis") &&
+              !percentageAnimated
+            ) {
+              animatePercentage();
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.2
+      }
+    );
+
+    document.querySelectorAll(".reveal").forEach(element => {
+      revealObserver.observe(element);
+    });
+
+    function animatePercentage() {
+      percentageAnimated = true;
+
+      let current = 0;
+      const target = 98.7;
+
+      const interval = setInterval(() => {
+        current += 1.3;
+
+        if (current >= target) {
+          current = target;
+          clearInterval(interval);
+        }
+
+        percentageElement.textContent =
+          current.toFixed(current === target ? 1 : 0) + "%";
+      }, 30);
+    }
+
+    function calculateVerdict() {
+      if (verdictShown) {
+        goToSection("final");
+        return;
+      }
+
+      verdictShown = true;
+
+      const wait = document.getElementById("decisionWait");
+      const verdict = document.getElementById("verdict");
+      const verdictSub = document.getElementById("verdictSub");
+      const button = document.getElementById("verdictButton");
+
+      button.disabled = true;
+      button.textContent = "Analyzing Evidence...";
+
+      setTimeout(() => {
+        wait.style.display = "none";
+        verdict.style.display = "block";
+        verdictSub.style.display = "block";
+
+        button.disabled = false;
+        button.textContent = "View Final Report";
+
+        launchConfetti(50);
+
+        button.onclick = () => {
+          goToSection("final");
+        };
+      }, 2700);
+    }
+
+    function closeCase() {
+      const caseClosed = document.getElementById("caseClosed");
+
+      caseClosed.style.display = "block";
+      launchConfetti(90);
+
+      setTimeout(() => {
+        caseClosed.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+      }, 100);
+    }
+
+    function launchConfetti(amount) {
+      const confettiContainer =
+        document.getElementById("confetti");
+
+      const colors = [
+        "#ef233c",
+        "#ffffff",
+        "#ffc857",
+        "#35d07f",
+        "#40a9ff"
+      ];
+
+      for (let i = 0; i < amount; i++) {
+        const piece = document.createElement("span");
+
+        piece.className = "confetti-piece";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.background =
+          colors[Math.floor(Math.random() * colors.length)];
+
+        piece.style.animationDuration =
+          2.2 + Math.random() * 2.2 + "s";
+
+        piece.style.animationDelay =
+          Math.random() * 0.5 + "s";
+
+        piece.style.transform =
+          `rotate(${Math.random() * 360}deg)`;
+
+        confettiContainer.appendChild(piece);
+
+        setTimeout(() => {
+          piece.remove();
+        }, 5000);
+      }
+    }
+  </script>
+ 
+</body>
+</html>
